@@ -1,0 +1,17 @@
+{% extends 'flatpages/default.html' %}
+{% block title %}
+{% block page_title %}
+    Board
+{% endblock %}
+{% endblock title %}
+{% block page_content %}
+    {% if ads %}
+        {% for ad in ads %}
+            {{ ad.create_ts|date:'d.m.y H:i' }}
+            <b>{{ ad.user }}: <a href="{% url 'ad_details' ad.id %}">{{ ad.title }}</a></b><br>
+            <hr>
+        {% endfor %}
+    {% else %}
+        No ads yet :-(
+    {% endif %}
+{% endblock page_content %}
