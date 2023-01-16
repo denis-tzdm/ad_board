@@ -1,5 +1,11 @@
-from django.views.generic import ListView, DetailView
-from .models import Ad
+from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
+from django.shortcuts import redirect
+from django.urls import reverse, reverse_lazy
+from django.views import View
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+
+from .forms import AdForm, ReplyForm
+from .models import Ad, Reply
 
 
 class AdList(ListView):
@@ -14,3 +20,152 @@ class AdDetail(DetailView):
     model = Ad
     template_name = 'board/ad_detail.html'
     context_object_name = 'ad'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['replies'] = Reply.objects.filter(ad=self.get_object())
+        return context
+
+
+class AdCreate(PermissionRequiredMixin, CreateView):
+    permission_required = ('board.add_ad',)
+    form_class = AdForm
+    model = Ad
+    template_name = 'board/edit.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['action'] = 'New'
+        context['object_type'] = 'ad'
+        return context
+
+    def form_valid(self, form):
+        ad = form.save(commit=False)
+        ad.user = self.request.user
+        ad.save()
+        return super().form_valid(form)
+
+
+class AdEdit(PermissionRequiredMixin, UserPassesTestMixin, UpdateView):
+    permission_required = ('board.change_ad',)
+    form_class = AdForm
+    model = Ad
+    template_name = 'board/edit.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['action'] = 'Change'
+        context['object_type'] = 'ad'
+        return context
+
+    def test_func(self):
+        ad = self.get_object()
+        return ad.user == self.request.user
+
+
+class AdDelete(PermissionRequiredMixin, UserPassesTestMixin, DeleteView):
+    permission_required = ('board.delete_ad',)
+    model = Ad
+    template_name = 'board/delete.html'
+    success_url = reverse_lazy('ad_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object_type'] = 'ad'
+        return context
+
+    def test_func(self):
+        ad = self.get_object()
+        return ad.user == self.request.user
+
+
+class ReplyDetail(DetailView):
+    model = Reply
+    template_name = 'board/reply_detail.html'
+    context_object_name = 'reply'
+
+
+class ReplyCreate(PermissionRequiredMixin, UserPassesTestMixin, CreateView):
+    permission_required = ('board.add_reply',)
+    form_class = ReplyForm
+    model = Reply
+    template_name = 'board/ad_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['action'] = 'New'
+        context['object_type'] = 'reply'
+        context['ad'] = Ad.objects.get(id=self.kwargs['ad_pk'])
+        return context
+
+    def form_valid(self, form):
+        reply = form.save(commit=False)
+        reply.user = self.request.user
+        reply.ad = Ad.objects.get(id=self.kwargs['ad_pk'])
+        reply.save()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('ad_details', kwargs={'pk': self.kwargs['ad_pk']})
+
+    def test_func(self):
+        ad = Ad.objects.get(id=self.kwargs['ad_pk'])
+        return ad.user != self.request.user
+
+
+class ReplyEdit(PermissionRequiredMixin, UserPassesTestMixin, UpdateView):
+    permission_required = ('board.change_reply',)
+    form_class = ReplyForm
+    model = Reply
+    template_name = 'board/edit.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['action'] = 'Change'
+        context['object_type'] = 'reply'
+        return context
+
+    def form_valid(self, form):
+        reply = form.save(commit=False)
+        reply.user = self.request.user
+        reply.save()
+        return super().form_valid(form)
+
+    def test_func(self):
+        reply = self.get_object()
+        return reply.user == self.request.user
+
+
+class ReplyDelete(PermissionRequiredMixin, UserPassesTestMixin, DeleteView):
+    permission_required = ('board.delete_reply',)
+    model = Reply
+    template_name = 'board/delete.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object_type'] = 'reply'
+        return context
+
+    def test_func(self):
+        reply = self.get_object()
+        return reply.user == self.request.user
+
+    def get_success_url(self):
+        return reverse_lazy('ad_details', kwargs={'pk': self.object.ad.pk})
+
+
+class ReplyAcceptDecline(PermissionRequiredMixin, UserPassesTestMixin, View):
+    permission_required = ('board.change_reply',)
+
+    def get(self, *args, **kwargs):
+        reply = Reply.objects.get(id=kwargs['pk'])
+        if self.request.path == reverse('reply_decline', kwargs={'pk': kwargs['pk']}):
+            reply.accepted = False
+        else:
+            reply.accepted = True
+        reply.save()
+        return redirect('ad_details', pk=reply.ad.pk)
+
+    def test_func(self):
+        reply = Reply.objects.get(id=self.kwargs['pk'])
+        return reply.ad.user == self.request.user

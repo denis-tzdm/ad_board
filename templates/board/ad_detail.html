@@ -1,12 +1,80 @@
 {% extends 'flatpages/default.html' %}
-{% block title %}
-{% block page_title %}
+
+{% block title %}{% block page_title %}
     Ad
-{% endblock %}
-{% endblock title %}
+{% endblock %}{% endblock %}
+
+{% block top_links %}
+    {% if user.is_authenticated %}
+        {% if user == ad.user %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'ad_edit' ad.id %}">Edit ad</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'ad_delete' ad.id %}">Delete ad</a></li>
+        {% elif object_type != 'reply' %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'reply_create' ad.id %}">Reply</a></li>
+        {% endif %}
+        <li class="nav-item"><a class="nav-link" href="#">|</a></li>
+    {% endif %}
+    {{ block.super }}
+{% endblock top_links %}
+
 {% block page_content %}
     <h2>{{ ad.title }}</h2>
     <b>{{ ad.user }}</b>, {{ ad.create_ts|date:'d.m.y H:i' }}
     <hr>
-    {{ ad.content }}
+    {{ ad.content|safe }}
+
+    {% if replies %}
+        <br><br>
+        <h4>Replies</h4>
+        {% for reply in replies %}
+            <hr>
+            <b><a href="{% url 'reply_details' reply.id %}">{{ reply.user }} {{ reply.create_ts|date:'d.m.y H:i' }}</a>
+                ({% if reply.accepted %}accepted{% else %}not accepted{% endif %}):</b><br>
+            {{ reply.content }}
+            <br>
+            {% if user.is_authenticated %}
+                <table style="margin-left:auto;margin-right:auto;">
+                    <tr>
+                        {% if user == reply.user %}
+                            <td>
+                                <form action="{% url 'reply_edit' reply.id %}">
+                                    <button type="submit">Edit reply</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form action="{% url 'reply_delete' reply.id %}">
+                                    <button type="submit">Delete reply</button>
+                                </form>
+                            </td>
+                        {% elif user == reply.ad.user %}
+                            {% if reply.accepted %}
+                                <td>
+                                    <form action="{% url 'reply_decline' reply.id %}">
+                                        <button type="submit">Decline</button>
+                                    </form>
+                                </td>
+                            {% else %}
+                                <td>
+                                    <form action="{% url 'reply_accept' reply.id %}">
+                                        <button type="submit">Accept</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        {% endif %}
+                    </tr>
+                </table>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% if action == 'New' and object_type == 'reply' %}
+        <hr>
+        Reply:
+        <form action="" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Publish"/>
+        </form>
+    {% endif %}
+
 {% endblock page_content %}

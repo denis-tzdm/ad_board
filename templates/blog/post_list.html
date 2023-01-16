@@ -1,7 +1,9 @@
 {% extends 'flatpages/default.html' %}
-{% block page_title %}
+
+{% block title %}{% block page_title %}
     Blog
-{% endblock %}
+{% endblock %}{% endblock %}
+
 {% block page_content %}
     {% if posts %}
         {% for post in posts %}

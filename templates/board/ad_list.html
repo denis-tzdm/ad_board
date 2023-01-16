@@ -1,14 +1,47 @@
 {% extends 'flatpages/default.html' %}
-{% block title %}
-{% block page_title %}
+
+{% block title %}{% block page_title %}
     Board
-{% endblock %}
-{% endblock title %}
+{% endblock %}{% endblock %}
+
+{% block top_links %}
+    {% if user.is_authenticated %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'ad_create' %}">Create ad</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">|</a></li>
+    {% endif %}
+    {{ block.super }}
+{% endblock top_links %}
+
 {% block page_content %}
     {% if ads %}
         {% for ad in ads %}
             {{ ad.create_ts|date:'d.m.y H:i' }}
             <b>{{ ad.user }}: <a href="{% url 'ad_details' ad.id %}">{{ ad.title }}</a></b><br>
+            Replies: {{ ad.reply_set.count }}
+            {% if user.is_authenticated %}
+                <table style="margin-left:auto;margin-right:auto;">
+                    <tr>
+                        {% if user == ad.user %}
+                            <td>
+                                <form action="{% url 'ad_edit' ad.id %}">
+                                    <button type="submit">Edit ad</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form action="{% url 'ad_delete' ad.id %}">
+                                    <button type="submit">Delete ad</button>
+                                </form>
+                            </td>
+                        {% else %}
+                            <td>
+                                <form action="{% url 'reply_create' ad.id %}">
+                                    <button type="submit">Reply</button>
+                                </form>
+                            </td>
+                        {% endif %}
+                    </tr>
+                </table>
+            {% endif %}
             <hr>
         {% endfor %}
     {% else %}
