@@ -11,10 +11,11 @@
             <li class="nav-item"><a class="nav-link" href="{% url 'reply_delete' reply.id %}">Delete reply</a></li>
             <li class="nav-item"><a class="nav-link" href="#">|</a></li>
         {% elif user == reply.ad.user %}
-            {% if reply.accepted %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'reply_decline' reply.id %}">Decline</a></li>
-            {% else %}
+            {% if not reply.accepted %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'reply_accept' reply.id %}">Accept</a></li>
+            {% endif %}
+            {% if not reply.declined %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'reply_decline' reply.id %}">Decline</a></li>
             {% endif %}
             <li class="nav-item"><a class="nav-link" href="#">|</a></li>
         {% endif %}

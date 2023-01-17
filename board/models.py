@@ -40,6 +40,7 @@ class Reply(models.Model):
     create_ts = models.DateTimeField(auto_now_add=True)
     content = models.TextField(verbose_name='text')
     accepted = models.BooleanField(default=False)
+    declined = models.BooleanField(default=False)
 
     def __str__(self):
         date_str = datetime.strftime(self.create_ts, '%d.%m.%y %H:%M')

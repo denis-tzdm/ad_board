@@ -24,9 +24,10 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 {% block top_links %}
-                    <li class="nav-item"><a class="nav-link" href="/board/">Board</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/blog/">Blog</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'ad_list' %}">Board</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'blog_list' %}">Blog</a></li>
                     {% if user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ad_list_personal' %}">My ads</a></li>
                         <li class="nav-item"><a class="nav-link" href="/accounts/logout/">Sign Out
                             ({{ user.username }})</a></li>
                     {% else %}

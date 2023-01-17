@@ -4,6 +4,7 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
+from .filters import AdFilter
 from .forms import AdForm, ReplyForm
 from .models import Ad, Reply
 
@@ -15,16 +16,24 @@ class AdList(ListView):
     context_object_name = 'ads'
     paginate_by = 10
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.kwargs.get('personal'):
+            queryset = queryset.filter(user=self.request.user)
+        self.filterset = AdFilter(self.request.GET, queryset)
+        return self.filterset.qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['personal'] = self.kwargs['personal']
+        context['filterset'] = self.filterset
+        return context
+
 
 class AdDetail(DetailView):
     model = Ad
     template_name = 'board/ad_detail.html'
     context_object_name = 'ad'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['replies'] = Reply.objects.filter(ad=self.get_object())
-        return context
 
 
 class AdCreate(PermissionRequiredMixin, CreateView):
@@ -159,12 +168,14 @@ class ReplyAcceptDecline(PermissionRequiredMixin, UserPassesTestMixin, View):
 
     def get(self, *args, **kwargs):
         reply = Reply.objects.get(id=kwargs['pk'])
-        if self.request.path == reverse('reply_decline', kwargs={'pk': kwargs['pk']}):
+        if self.request.get_full_path() == reverse('reply_decline', kwargs=kwargs):
             reply.accepted = False
+            reply.declined = True
         else:
             reply.accepted = True
+            reply.declined = False
         reply.save()
-        return redirect('ad_details', pk=reply.ad.pk)
+        return redirect(self.request.META.get('HTTP_REFERER'))
 
     def test_func(self):
         reply = Reply.objects.get(id=self.kwargs['pk'])
