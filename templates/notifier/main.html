@@ -393,7 +393,9 @@
                                                                cellspacing="0">
                                                             <tbody>
                                                             <tr>
-                                                                <td><a href="{% block button_link %}{% endblock %}" target="_blank">{% block button_text %}{% endblock %}</a></td>
+                                                                <td><a href="{% block button_link %}{% endblock %}"
+                                                                       target="_blank">
+                                                                    {% block button_text %}{% endblock %}</a></td>
                                                             </tr>
                                                             </tbody>
                                                         </table>
@@ -403,6 +405,7 @@
                                             </table>
                                         {% endblock %}
                                         {% block secondary_message %}
+                                            <p>{% trans "Have a good day!" %}</p>
                                         {% endblock %}
                                     </td>
                                 </tr>

@@ -30,9 +30,9 @@
         {% include 'board/replies.html' %}
     {% endif %}
 
-    {% if action == 'New' and object_type == 'reply' %}
+    {% if object_type == 'reply' %}
         <hr>
-        Reply:
+        {{ action }} reply:
         <form action="" method="post">
             {% csrf_token %}
             {{ form.as_p }}

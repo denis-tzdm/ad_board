@@ -5,9 +5,7 @@ from django.db import models
 
 
 class Post(models.Model):
-    # todo: автодобавление даты, переделать миграции
-    # create_ts = models.DateTimeField(auto_now_add=True)
-    create_ts = models.DateTimeField()
+    create_ts = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=400)
     content = models.TextField(blank=True, null=True, verbose_name='text')
 

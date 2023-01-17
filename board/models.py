@@ -47,4 +47,4 @@ class Reply(models.Model):
         return f'{date_str} {self.user} to {self.ad}'
 
     def get_absolute_url(self):
-        return reverse('ad_details', args=[str(self.ad.id)])
+        return reverse('reply_details', args=[str(self.id)])

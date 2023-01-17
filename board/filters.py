@@ -14,10 +14,11 @@ class AdFilter(FilterSet):
         field_name='create_ts',
         lookup_expr='date__gt',
         label='Published after',
-        widget=widgets.DateInput(attrs={
-                                     'class': 'datepicker',
-                                     'type': 'date'
-                                 })
+        widget=widgets.DateInput(
+            attrs={
+                'class': 'datepicker',
+                'type': 'date'
+            })
     )
     categories = ModelMultipleChoiceFilter(
         field_name='category',

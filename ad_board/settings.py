@@ -21,11 +21,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django_summernote',
+    'common',
     'allauth',
     'allauth.account',
     'accounts',
     'blog',
     'board',
+    'notifier.apps.NotifierConfig',
 ]
 
 MIDDLEWARE = [
@@ -125,3 +127,14 @@ STATICFILES_DIRS = [
 
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = 'media/'
+
+REDIS_USER = str(os.getenv("REDIS_USER"))
+REDIS_PASS = str(os.getenv("REDIS_PASS"))
+REDIS_HOST = str(os.getenv("REDIS_HOST"))
+REDIS_PORT = str(os.getenv("REDIS_PORT"))
+CELERY_BROKER_URL = f'redis://{REDIS_USER}:{REDIS_PASS}@{REDIS_HOST}:{REDIS_PORT}'
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE

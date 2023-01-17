@@ -14,7 +14,7 @@ class AdList(ListView):
     ordering = '-create_ts'
     template_name = 'board/ad_list.html'
     context_object_name = 'ads'
-    paginate_by = 10
+    paginate_by = 5
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -126,12 +126,13 @@ class ReplyEdit(PermissionRequiredMixin, UserPassesTestMixin, UpdateView):
     permission_required = ('board.change_reply',)
     form_class = ReplyForm
     model = Reply
-    template_name = 'board/edit.html'
+    template_name = 'board/ad_detail.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['action'] = 'Change'
         context['object_type'] = 'reply'
+        context['ad'] = self.object.ad
         return context
 
     def form_valid(self, form):
@@ -143,6 +144,9 @@ class ReplyEdit(PermissionRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         reply = self.get_object()
         return reply.user == self.request.user
+
+    def get_success_url(self):
+        return reverse_lazy('ad_details', kwargs={'pk': self.object.ad.pk})
 
 
 class ReplyDelete(PermissionRequiredMixin, UserPassesTestMixin, DeleteView):

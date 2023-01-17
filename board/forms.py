@@ -1,5 +1,4 @@
 from django import forms
-from django.contrib.auth.models import User
 from django_summernote.fields import SummernoteTextField
 from django_summernote.widgets import SummernoteWidget
 
@@ -22,7 +21,6 @@ class AdForm(forms.ModelForm):
 
 
 class ReplyForm(forms.ModelForm):
-
     class Meta:
         model = Reply
         fields = [
