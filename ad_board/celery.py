@@ -11,9 +11,9 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.conf.beat_schedule = {
     'send_blog_digest_weekly': {
         'task': 'notifier.tasks.send_blog_digest',
-        'schedule': crontab(day_of_week="tuesday",
-                            hour="18",
-                            minute="31"),
+        'schedule': crontab(day_of_week="monday",
+                            hour="12",
+                            minute="00"),
     },
 }
 
